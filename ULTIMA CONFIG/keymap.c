@@ -20,8 +20,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include QMK_KEYBOARD_H
 #include "keymap_italian.h"
-#define IT_TILD ALGR(IT_BSLS)
-
+// #define IT_TILD ALGR(IT_BSLS)
+enum custom_keycodes {
+    TILDEKEY = SAFE_RANGE,
+};
 
 #include <stdio.h>
 // char wpm_str[10];
@@ -61,7 +63,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|-----------------------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       MT(MOD_LSFT, KC_CAPS),  IT_AGRV ,   IT_PIPE,   IT_AMPR,   IT_QUES,  IT_EXLM,             KC_PSLS,  IT_LBRC , IT_RBRC , IT_QUOT ,   IT_MINS, KC_ENT,
   //|-----------------------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      KC_LCTL,            IT_LABK,   IT_RABK,  IT_CIRC,  IT_HASH , KC_DLR,                      KC_PPLS,  IT_LPRN  , IT_RPRN  , IT_TILD,   KC_LEFT,  KC_RGHT,
+      KC_LCTL,            IT_LABK,   IT_RABK,  IT_CIRC,  IT_HASH , KC_DLR,                      KC_PPLS,  IT_LPRN  , IT_RPRN  , TILDEKEY,   KC_LEFT,  KC_RGHT,
   //|-----------------------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                                         KC_LALT, MO(3), KC_SPC,    KC_SPC, _______ , KC_LGUI
                                                      //`--------------------------'  `--------------------------'
@@ -100,6 +102,34 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     // Store the current modifier state in the variable for later reference
     mod_state = get_mods();
     switch (keycode) {
+
+    case TILDEKEY: // Tilde / backtick
+        if (record->event.pressed) {            
+            if (mod_state & MOD_MASK_SHIFT) { // Detect the activation of either shift keys
+                // con shift → backtick (altgr + 96)
+                del_mods(MOD_MASK_SHIFT);
+                register_code(KC_LALT); 
+                register_code(KC_P9); 
+                unregister_code(KC_P9);
+                register_code(KC_P6); 
+                unregister_code(KC_P6);
+                unregister_code(KC_LALT);
+                set_mods(mod_state);
+            } else {
+                // senza shift → tilde (altgr + 126)
+                del_mods(MOD_MASK_SHIFT);
+                register_code(KC_LALT); 
+                register_code(KC_P1); 
+                unregister_code(KC_P1);
+                register_code(KC_P2); 
+                unregister_code(KC_P2);
+                register_code(KC_P6); 
+                unregister_code(KC_P6);
+                unregister_code(KC_LALT);
+                set_mods(mod_state);
+            }
+        }
+        return false;
 
     case KC_BSPC: { // SHIFT + BACKSPACE = CANC
         static bool delkey_registered;
